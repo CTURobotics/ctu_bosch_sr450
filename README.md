@@ -3,28 +3,11 @@
 Package to control CTU/CIIRC robot Bosch SR450 via MARS control unit.
 This code is based on `https://github.com/cvut/pyrocon` but adds packaging,
 documentation, and some testing.
+For the complete documentation see https://robotics-robot-stations.readthedocs.io/
 
 ## Installation
 
 ```bash
-pip install ctu_bosch_sr450
-```
-
-### Installation for old systems via Conda
-
-You need at least Python 3.7 to use this package. In case your python is old (Ubuntu in
-CIIRC labs has old 3.6), install updated version of python e.g. via miniconda:
-
-```
-# Install miniconda:
-mkdir -p ~/miniconda3
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
-bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-rm -rf ~/miniconda3/miniconda.sh
-
-# Create conda environment with newer python and install ctu_bosch_sr450:
-conda create -n ctu_robotics python=3.8
-conda activate ctu_robotics
 pip install ctu_bosch_sr450
 ```
 
@@ -121,3 +104,12 @@ Preparation of the course materials was partially supported by:
 ![](https://raw.githubusercontent.com/CTURobotics/ctu_bosch_sr450/main/doc/NPO-publicity-logo_crop.png)
 
 
+
+## For developers
+```
+git clone git@github.com:CTURobotics/ctu_bosch_sr450.git
+cd ctu_bosch_sr450
+uv sync
+uv pip install -e ".[dev]"
+pre-commit install
+```

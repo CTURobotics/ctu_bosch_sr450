@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ctu_bosch_sr450"
-version = "1.0.2"
+version = "1.0.3"
 description = "Package to control CTU/CIIRC robot Bosch SR450 via MARS control unit."
 authors = [
     { name = "Vladimir Petrik", email = "vladimir.petrik@cvut.cz" },
@@ -13,25 +17,10 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "BSD 3-Clause" }
 
-[tool.pdm.dev-dependencies]
-test = [
-    "pytest>=7.4.3",
-    "coverage>=7.3.2",
+[project.optional-dependencies]
+dev = [
+    "black>=25.9.0",
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.2",
+    "ruff>=0.13.2",
 ]
-lint = [
-    "black>=23.10.1",
-    "ruff>=0.1.3",
-]
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm.scripts]
-test = "pytest -v tests/"
-coverage = "coverage run --source src -m pytest tests/"
-post_coverage = "coverage xml"
-ruff = "ruff check src tests examples"
-black = "black --check --diff --verbose src tests examples"
-format = "black src tests examples"
-lint = { composite = ["ruff", "black"] }
