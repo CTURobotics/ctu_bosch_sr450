@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ctu_bosch_sr450"
-version = "1.0.2"
+version = "1.0.3"
 description = "Package to control CTU/CIIRC robot Bosch SR450 via MARS control unit."
 authors = [
     { name = "Vladimir Petrik", email = "vladimir.petrik@cvut.cz" },
