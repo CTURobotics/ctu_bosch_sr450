@@ -98,7 +98,7 @@ class BaslerCamera:
 
         Args:
             exposure_time (float, optional): The exposure time in microseconds. If 0, auto-exposure is used. Defaults to 0.0.
-            gain (float, optional): The camera gain. If 0, auto-gain is used. Defaults to 0.0.
+            gain (float, optional): The camera gain. Defaults to 0.0.
             gamma (float, optional): The gamma correction value. Defaults to 1.0.
         """
         if not self.opened:
@@ -110,11 +110,8 @@ class BaslerCamera:
         else:
             self.camera.ExposureAuto.SetValue("Continuous")
 
-        if gain > 0:
-            self.camera.GainAuto.SetValue("Off")
-            self.camera.Gain.SetValue(gain)
-        else:
-            self.camera.GainAuto.SetValue("Continuous")
+        self.camera.GainAuto.SetValue("Off")
+        self.camera.Gain.SetValue(gain)
 
         self.camera.Gamma.SetValue(gamma)
 
