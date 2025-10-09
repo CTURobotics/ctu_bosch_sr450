@@ -73,12 +73,13 @@ wheels = [
 
 [[package]]
 name = "ctu-bosch-sr450"
-version = "1.0.2"
+version = "1.0.3"
 source = { editable = "." }
 dependencies = [
     { name = "ctu-mars-control-unit" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pypylon" },
 ]
 
 [package.optional-dependencies]
@@ -95,6 +96,7 @@ requires-dist = [
     { name = "ctu-mars-control-unit", specifier = ">=0.1.3" },
     { name = "numpy", specifier = ">=2.1.2" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.3.0" },
+    { name = "pypylon", specifier = ">=4.2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.13.2" },
 ]
@@ -388,6 +390,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
+]
+
+[[package]]
+name = "pypylon"
+version = "4.2.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1d/1d/f7e2237566bd4bd0bd38e3a6fb1a6c7ef88e19884290f258b33bdba5d8c5/pypylon-4.2.0-cp39-abi3-macosx_14_0_arm64.whl", hash = "sha256:ee1c89eff3caba2212b29cc3b86ff589b0b1ca131e635a225ae4c37249cf9838", size = 31361506, upload-time = "2025-06-02T11:24:28.14Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/19/ae12f9402fa65b4b653e1f7c3e7e7a7332c816ba08dd7ee8ccce9b6f01a8/pypylon-4.2.0-cp39-abi3-macosx_14_0_x86_64.whl", hash = "sha256:75383fb9c6ed0d484e327f7bbe4047123f1e704a23a5c658eca1710a901c8bfe", size = 31444669, upload-time = "2025-06-02T11:24:31.902Z" },
+    { url = "https://files.pythonhosted.org/packages/34/3c/4cfae184eb81c225769d25f38a686de529f5fc3759822b9d86095b8b7bc7/pypylon-4.2.0-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:3a4ba03737d8f70d734577875a387e086ae74ecd165650c0f1141d37bcaf2468", size = 77101763, upload-time = "2025-06-02T11:26:15.436Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/cc/2d06b6f3c73808d8e7aff5de954e3ee9ce7a2532be9ea6b62427ac01eece/pypylon-4.2.0-cp39-abi3-manylinux_2_31_x86_64.whl", hash = "sha256:d66b7367e1ddd0b312b785bbc9688de5a2d5f4f083e095084bf5a4a978729d8f", size = 88565547, upload-time = "2025-06-02T11:25:42.34Z" },
+    { url = "https://files.pythonhosted.org/packages/9e/85/fb75dafe3ad1b928930efb753c97aec79efe74fbdc1a590516e5e96e01ca/pypylon-4.2.0-cp39-abi3-win_amd64.whl", hash = "sha256:a7a13978f1a8e352b9cecc1334eef06e0bb0262e58dfa4de9bc317c5b8afaf1d", size = 95812459, upload-time = "2025-06-02T11:27:31.648Z" },
 ]
 
 [[package]]

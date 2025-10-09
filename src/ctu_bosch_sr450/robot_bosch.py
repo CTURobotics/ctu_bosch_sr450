@@ -12,6 +12,8 @@ from numpy.typing import ArrayLike
 from ctu_mars_control_unit import MarsControlUnit
 from ctu_bosch_sr450.circle_circle_intersection import circle_circle_intersection
 
+from src.ctu_bosch_sr450.basler_camera import BaslerCamera
+
 
 class RobotBosch:
     """RobotBosch is a class representing the Bosch SR450 robot. It has access to the
@@ -60,6 +62,15 @@ class RobotBosch:
         self._default_acceleration_irc_per_ms = np.array([30, 30, 20, 30])
 
         self._initialized = False
+        self._camera: BaslerCamera | None = None
+
+    def grab_image(self, timeout=10000):
+        if self._camera is None:
+            self._camera = BaslerCamera()
+            self._camera.connect_by_name("camera-bosch")
+            self._camera.open()
+            self._camera.set_parameters()
+        return self._camera.grab_image(timeout)
 
     def release(self):
         """Release errors and reset control unit."""
