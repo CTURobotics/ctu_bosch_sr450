@@ -15,10 +15,28 @@ from ctu_bosch_sr450.basler_camera import BaslerCamera
 
 
 class RobotBosch:
-    """RobotBosch is a class representing the Bosch SR450 robot. It has access to the
-    robot's control unit and basic kinematics functions."""
+    """
+    Represents the Bosch SR450 robot.
+
+    This class provides an interface to control the Bosch SR450 robot, including access
+    to its control unit and basic kinematics functions.
+
+    Attributes:
+        link_lengths (np.ndarray): The lengths of the robot's links.
+        q_min (np.ndarray): The minimum joint limits in radians.
+        q_max (np.ndarray): The maximum joint limits in radians.
+        q_home (np.ndarray): The home joint configuration.
+    """
 
     def __init__(self, tty_dev: str | None = "/dev/mars", baudrate: int = 19200):
+        """
+        Initializes the RobotBosch instance.
+
+        Args:
+            tty_dev: The TTY device for the Mars control unit. If None, the robot
+                is in simulation mode.
+            baudrate: The baud rate for the serial communication.
+        """
         super().__init__()
         self._mars = (
             MarsControlUnit(tty_dev=tty_dev, baudrate=baudrate)
@@ -63,7 +81,19 @@ class RobotBosch:
         self._initialized = False
         self._camera: BaslerCamera | None = None
 
-    def grab_image(self, timeout=10000):
+    def grab_image(self, timeout=10000) -> np.ndarray:
+        """
+        Grabs an image from the Basler camera.
+
+        If the camera is not initialized, it will be connected and opened before
+        grabbing the image.
+
+        Args:
+            timeout: The timeout in milliseconds for grabbing the image.
+
+        Returns:
+            The grabbed image.
+        """
         if self._camera is None:
             self._camera = BaslerCamera()
             self._camera.connect_by_name("camera-bosch")
@@ -72,26 +102,31 @@ class RobotBosch:
         return self._camera.grab_image(timeout)
 
     def release(self):
-        """Release errors and reset control unit."""
+        """Release errors and reset the control unit."""
         self._mars.send_cmd("RELEASE:\n")
 
     def reset_motors(self):
-        """Reset motors of robot."""
+        """Reset the robot's motors."""
         self._mars.send_cmd("PURGE:\n")
 
     def close(self):
-        """Close connection to the robot."""
+        """Close the connection to the robot."""
         self._mars.close_connection()
 
     def initialize(self, home: bool = True):
-        """Initialize communication with robot and set all necessary parameters.
-        This command will perform following settings:
-         - synchronize communication with mars control unit
-         - send command to power motors, wait for user to power them
-         - reset motors and wait for them to be ready
-         - set PID control parameters, maximum speed and acceleration
-         - set value for IDLE release
-         - perform hard home and soft home, if @param home is True
+        """
+        Initializes the communication with the robot and sets necessary parameters.
+
+        This method performs the following steps:
+         - Synchronizes communication with the Mars control unit.
+         - Sends a command to power the motors and waits for user confirmation.
+         - Resets the motors and waits for them to be ready.
+         - Sets PID control parameters, maximum speed, and acceleration.
+         - Sets the value for IDLE release.
+         - Performs hard and soft homing if `home` is True.
+
+        Args:
+            home: If True, perform hard and soft homing.
         """
         self._mars.sync_cmd_fifo()
 
@@ -123,25 +158,27 @@ class RobotBosch:
         self._initialized = True
 
     def _joint_values_to_irc(self, joint_values: ArrayLike) -> np.ndarray:
-        """Convert joint values [rad,m] to IRC."""
+        """Converts joint values [rad, m] to IRC."""
         j = np.asarray(joint_values)
         assert j.shape == (len(self._motors_ids),), "Incorrect number of joints."
         return np.rint(joint_values * self._q_to_q_irc)
 
     def _irc_to_joint_values(self, irc: ArrayLike) -> np.ndarray:
-        """Convert IRC to joint values [rad,m]."""
+        """Converts IRC to joint values [rad, m]."""
         irc = np.asarray(irc)
         assert irc.shape == (len(self._motors_ids),), "Incorrect number of joints."
         return irc / self._q_to_q_irc
 
     def set_speed(self, speed_irc256_ms: ArrayLike):
-        """Set speed for each motor in IRC*256/msec."""
+        """Sets the speed for each motor in IRC*256/msec."""
         assert len(speed_irc256_ms) == len(self._motors_ids)
         for axis, speed in zip(self._motors_ids, speed_irc256_ms):
             self._mars.send_cmd(f"REGMS{axis}:{np.rint(speed)}\n")
 
     def set_speed_relative(self, fraction: float):
-        """Set speed for each motor in fraction (0-1) of maximum speed."""
+        """
+        Sets the speed for each motor as a fraction (0-1) of the maximum speed.
+        """
         assert 0 <= fraction <= 1, "Fraction must be in [0,1]."
         s = self._min_speed_irc256_per_ms + fraction * (
             self._max_speed_irc256_per_ms - self._min_speed_irc256_per_ms
@@ -149,13 +186,16 @@ class RobotBosch:
         self.set_speed(s)
 
     def set_acceleration(self, acceleration_irc_ms: ArrayLike):
-        """Set acceleration for each motor in IRC/msec."""
+        """Sets the acceleration for each motor in IRC/msec."""
         assert len(acceleration_irc_ms) == len(self._motors_ids)
         for axis, acceleration in zip(self._motors_ids, acceleration_irc_ms):
             self._mars.send_cmd(f"REGACC{axis}:{np.rint(acceleration)}\n")
 
     def set_acceleration_relative(self, fraction: float):
-        """Set acceleration for each motor in fraction (0-1) of maximum acceleration."""
+        """
+        Sets the acceleration for each motor as a fraction (0-1) of the maximum
+        acceleration.
+        """
         assert 0 <= fraction <= 1, "Fraction must be in [0,1]."
         a = self._min_acceleration_irc_per_ms + fraction * (
             self._max_acceleration_irc_per_ms - self._min_acceleration_irc_per_ms
@@ -163,8 +203,12 @@ class RobotBosch:
         self.set_acceleration(a)
 
     def hard_home(self):
-        """Perform hard home of the robot s.t. prismatic joint is homed first followed
-        by joint A, B, and D. The speed is reset to default value before homing."""
+        """
+        Performs a hard home of the robot.
+
+        The prismatic joint is homed first, followed by joints A, B, and D. The
+        speed is reset to the default value before homing.
+        """
         self.set_speed(self._default_speed_irc256_per_ms)
         self.set_acceleration(self._default_acceleration_irc_per_ms)
         for a in "CABD":
@@ -172,14 +216,19 @@ class RobotBosch:
             self._mars.wait_ready()
 
     def soft_home(self):
-        """Move robot to the home position using coordinated movement."""
+        """Moves the robot to the home position using a coordinated movement."""
         self._mars.setup_coordmv(self._motors_ids)
         self._mars.coordmv(self._joint_values_to_irc(self.q_home))
         self.wait_for_motion_stop()
 
     def move_to_q(self, q: ArrayLike):
-        """Move robot to the given joint configuration using coordinated movement.
-        The soft_home needs to be called before to set up coordinate movements."""
+        """
+        Moves the robot to the given joint configuration [rad] using a coordinated
+        movement.
+
+        Initialization must be called before this method to set up coordinated
+        movements.
+        """
         assert self._initialized, "You need to initialize the robot before moving it."
         assert np.all(q >= self.q_min) and np.all(
             q <= self.q_max
@@ -187,28 +236,36 @@ class RobotBosch:
         self._mars.coordmv(self._joint_values_to_irc(q))
 
     def get_q(self) -> np.ndarray:
-        """Get current joint configuration."""
+        """Gets the current joint configuration [rad]."""
         return self._irc_to_joint_values(
             self._mars.get_current_q_irc()[: len(self._motors_ids)]
         )
 
     def in_motion(self) -> bool:
-        """Return whether the robot is in motion."""
+        """Returns whether the robot is in motion."""
         return not self._mars.check_ready()
 
     def wait_for_motion_stop(self):
-        """Wait until the robot stops moving."""
+        """Waits until the robot stops moving."""
         self._mars.wait_ready()
 
     def in_limits(self, q: ArrayLike) -> bool:
-        """Return whether the given joint configuration is in joint limits."""
+        """
+        Returns whether the given joint configuration is within the joint limits.
+        """
         return np.all(q >= self.q_min) and np.all(q <= self.q_max)
 
     def fk(self, q: ArrayLike) -> tuple[float, float, float, float]:
-        """Compute forward kinematics for the given joint configuration @param q.
-        The output is (x,y,z,phi) where x,y,z are position of the end-effector w.r.t.
-        the base frame and phi is the orientation around z-axis of the end-effector
-        w.r.t. the base.
+        """
+        Computes the forward kinematics for the given joint configuration.
+
+        Args:
+            q: The joint configuration.
+
+        Returns:
+            A tuple (x, y, z, phi) representing the end-effector's pose, where
+            (x, y, z) is the position with respect to the base frame and phi is
+            the orientation around the gravity axis.
         """
         q = np.asarray(q)
         assert q.shape == (len(self._motors_ids),), "Incorrect number of joints."
@@ -222,12 +279,20 @@ class RobotBosch:
     def ik_xyz(
         self, x: float, y: float, z: float = 0, q3: float = 0
     ) -> list[np.ndarray]:
-        """Compute IK s.t. the end-effector is at the given position w.r.t. the
-        reference frame. The last joint value is set to the given fixed value. It does
-        not influence solution of IK, it is just passed to the output.
-        Internally, :param x and :param y are used to compute first and second
-        (revolute) joint values. The :param z is used to compute third (prismatic) joint
-        value. Return all solutions that are in joint limits.
+        """
+        Computes the inverse kinematics for a given end-effector position.
+
+        The last joint value is set to the given fixed value and does not
+        influence the IK solution.
+
+        Args:
+            x: The x-coordinate of the desired position.
+            y: The y-coordinate of the desired position.
+            z: The z-coordinate of the desired position.
+            q3: The fixed value for the last joint.
+
+        Returns:
+            A list of all solutions that are within the joint limits.
         """
         sols = []
         bs = circle_circle_intersection(
@@ -251,10 +316,21 @@ class RobotBosch:
     def ik(
         self, x: float, y: float, z: float = 0.0, phi: float = 0
     ) -> list[np.ndarray]:
-        """Compute IK s.t. the end-effector is at the given position w.r.t. the
-        reference frame. Internally xyz is computed by ik_xyz function for all possible
-        tool orientation (phi). Return all solutions that are in joint limits.
-        If no solution exists, return empty list.
+        """
+        Computes the inverse kinematics for a given end-effector pose.
+
+        This method internally calls `ik_xyz` for all possible tool orientations
+        (phi).
+
+        Args:
+            x: The x-coordinate of the desired position.
+            y: The y-coordinate of the desired position.
+            z: The z-coordinate of the desired position.
+            phi: The desired orientation around the z-axis.
+
+        Returns:
+            A list of all solutions that are within the joint limits. Returns an
+            empty list if no solution exists.
         """
         phi = np.arctan2(np.sin(phi), np.cos(phi))  # normalize to [-pi,pi]
         sols = self.ik_xyz(x, y, z, phi)

@@ -73,7 +73,7 @@ wheels = [
 
 [[package]]
 name = "ctu-bosch-sr450"
-version = "1.0.4"
+version = "1.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "ctu-mars-control-unit" },

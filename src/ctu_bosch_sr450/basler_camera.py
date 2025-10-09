@@ -2,7 +2,7 @@
 #
 # Copyright (c) CTU -- All Rights Reserved
 # Created on: 2025-10-02
-
+import numpy as np
 from pypylon import pylon
 
 
@@ -11,6 +11,12 @@ class BaslerCamera:
 
     This class provides a simple interface to connect to, configure, and capture
     images from a Basler camera.
+
+    Attributes:
+        camera: The pylon.InstantCamera object.
+        converter: The pylon.ImageFormatConverter object.
+        connected: A boolean indicating if the camera is connected.
+        opened: A boolean indicating if the camera connection is open.
     """
 
     def __init__(self):
@@ -28,10 +34,11 @@ class BaslerCamera:
         """Connects to a camera by its user-defined name.
 
         Args:
-            name (str): The user-defined name of the camera to connect to.
+            name: The user-defined name of the camera to connect to.
 
         Raises:
-            RuntimeException: If no camera with the specified name is found.
+            pylon.RuntimeException: If no camera with the specified name is found,
+                or if no Basler cameras are detected.
             TypeError: If the camera name is not provided.
         """
         if not name:
@@ -55,10 +62,11 @@ class BaslerCamera:
         """Connects to a camera by its IP address.
 
         Args:
-            ip_addr (str): The IP address of the camera to connect to.
+            ip_addr: The IP address of the camera to connect to.
 
         Raises:
-            RuntimeException: If no camera with the specified IP address is found.
+            pylon.RuntimeException: If no camera with the specified IP address is
+                found, or if no Basler cameras are detected.
             TypeError: If the camera IP address is not provided.
         """
         if not ip_addr:
@@ -82,6 +90,7 @@ class BaslerCamera:
         """Opens the connection to the camera.
 
         This method must be called after a successful connection has been made.
+        It also initializes the image format converter to output BGR8 images.
         """
         if not self.connected:
             raise pylon.RuntimeException("Camera not connected.")
@@ -97,9 +106,11 @@ class BaslerCamera:
         """Sets the camera parameters.
 
         Args:
-            exposure_time (float, optional): The exposure time in microseconds. If 0, auto-exposure is used. Defaults to 0.0.
-            gain (int, optional): The camera gain. Defaults to 0.
-            gamma (float, optional): The gamma correction value. Defaults to 1.0.
+            exposure_time: The exposure time in microseconds. If 0,
+                auto-exposure ("Continuous") is used. Otherwise, exposure is set
+                manually.
+            gain: The camera gain (raw value). Auto-gain is always turned off.
+            gamma: The gamma correction value.
         """
         if not self.opened:
             return
@@ -115,11 +126,15 @@ class BaslerCamera:
 
         self.camera.Gamma.SetValue(gamma)
 
-    def grab_image(self, timeout: int = 10000):
+    def grab_image(self, timeout: int = 10000) -> None | np.ndarray:
         """Grabs a single image from the camera.
 
+        Args:
+            timeout: The timeout in milliseconds for the grab operation.
+
         Returns:
-            The captured image as a numpy array, or None if the grab fails.
+            The captured image as a numpy array in BGR8 format, or None if the
+            grab fails.
         """
         if not self.camera.IsGrabbing():
             self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly)
@@ -138,7 +153,11 @@ class BaslerCamera:
                 self.camera.StopGrabbing()
 
     def close(self):
-        """Closes the connection to the camera."""
+        """Closes the connection to the camera.
+
+        If the camera is grabbing, it is stopped. If the camera is open, it is
+        closed.
+        """
         if self.opened:
             if self.camera.IsGrabbing():
                 self.camera.StopGrabbing()
