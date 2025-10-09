@@ -11,8 +11,7 @@ from numpy.typing import ArrayLike
 
 from ctu_mars_control_unit import MarsControlUnit
 from ctu_bosch_sr450.circle_circle_intersection import circle_circle_intersection
-
-from src.ctu_bosch_sr450.basler_camera import BaslerCamera
+from ctu_bosch_sr450.basler_camera import BaslerCamera
 
 
 class RobotBosch:
