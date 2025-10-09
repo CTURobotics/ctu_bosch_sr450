@@ -92,13 +92,13 @@ class BaslerCamera:
         self.converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned
 
     def set_parameters(
-        self, exposure_time: float = 0.0, gain: float = 0.0, gamma: float = 1.0
+        self, exposure_time: float = 0.0, gain: int = 0, gamma: float = 1.0
     ):
         """Sets the camera parameters.
 
         Args:
             exposure_time (float, optional): The exposure time in microseconds. If 0, auto-exposure is used. Defaults to 0.0.
-            gain (float, optional): The camera gain. Defaults to 0.0.
+            gain (int, optional): The camera gain. Defaults to 0.
             gamma (float, optional): The gamma correction value. Defaults to 1.0.
         """
         if not self.opened:
@@ -111,7 +111,7 @@ class BaslerCamera:
             self.camera.ExposureAuto.SetValue("Continuous")
 
         self.camera.GainAuto.SetValue("Off")
-        self.camera.Gain.SetValue(gain)
+        self.camera.GainRaw.SetValue(gain)
 
         self.camera.Gamma.SetValue(gamma)
 
