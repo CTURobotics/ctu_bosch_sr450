@@ -10,7 +10,7 @@ from numpy.typing import ArrayLike
 
 
 def circle_circle_intersection(
-    c0: ArrayLike, r0: float, c1: ArrayLike, r1: float
+    c0: ArrayLike, r0: float, c1: ArrayLike, r1: float, tol: float = 1e-9
 ) -> list[np.ndarray]:
     """Computes the intersection(s) of two circles.
 
@@ -22,6 +22,8 @@ def circle_circle_intersection(
         r0: Radius of the first circle.
         c1: Center of the second circle as a 2D array-like object (e.g., [x, y]).
         r1: Radius of the second circle.
+        tol: Tolerance on the distance between centers that absorbs floating point
+            error around the tangent configurations.
 
     Returns:
         A list containing the intersection points as NumPy arrays.
@@ -43,13 +45,17 @@ def circle_circle_intersection(
             for a in np.random.uniform(-np.pi, np.pi, 2)
         ]
 
-    # No intersection if circles are separate or one is contained within the other
-    if r0 + r1 < d < np.abs(r0 - r1):
+    # No intersection if circles are separate or one is contained within the other;
+    # tol keeps (nearly) tangent circles
+    if d > r0 + r1 + tol or d < np.abs(r0 - r1) - tol:
         return []
 
-    a = (r0**2 - r1**2 + d**2) / (2 * d)
-    h_squared = r0**2 - a**2
-    h = np.sqrt(max(0, h_squared))  # Use max(0,...) for tangent case robustness
+    a = (r0**2 - r1**2 + d**2) / (2 * d)  # distance from c0 to the radical line
+    # Squared half-chord r0**2 - a**2 in factored form. It is non-negative exactly
+    # when the guard above passes; rounding may still push it slightly below zero
+    # at tangency, hence the clamp.
+    h_squared = ((r0 + r1) ** 2 - d**2) * (d**2 - (r0 - r1) ** 2) / (4 * d**2)
+    h = np.sqrt(max(0.0, h_squared))
 
     x0, y0 = c0
     x1, y1 = c1
